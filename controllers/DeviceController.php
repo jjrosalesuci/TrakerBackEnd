@@ -55,9 +55,9 @@ class DeviceController extends \yii\web\Controller
 
     public function actionCoordinates()
     {
-        $itemsStr = $_POST['body'];
+        $itemsStr  = $_POST['body'];
         $id_device = $_POST['deviceid'];
-        $items =  json_decode($itemsStr,true);
+        $items     =  json_decode($itemsStr,true);
 
         if(($device = DatDevice::findOne($id_device)) !== null){
             $device->lat          = $items[9]['lat'];
