@@ -55,14 +55,14 @@ class DeviceController extends \yii\web\Controller
 
     public function actionCoordinates()
     {
-        $postdata = file_get_contents("php://input");
-        $request = json_decode($postdata);
-        $id_device = $request->id;
+        $itemsStr = $_POST['body'];
+        $id_device = $_POST['deviceid'];
+        $items =  json_decode($itemsStr,true);
 
         if(($device = DatDevice::findOne($id_device)) !== null){
-            $device->lat          = $request->lat;
-            $device->lon          = $request->lon;
-            $device->time         = $request->time;
+            $device->lat          = $items[9]['lat'];
+            $device->lon          = $items[9]['lon'];
+            $device->time         = $items[9]['time'];
 
             if ($device->save()) {
                 $result = new \stdClass();
@@ -88,14 +88,35 @@ class DeviceController extends \yii\web\Controller
         $postdata = file_get_contents("php://input");
         $request = json_decode($postdata);
 
-        $user = $this->findModel($request->id);
-        $user->code             = $request->code;
-        $user->registration     = $request->registration;
-        $user->brand            = $request->brand;
-        $user->model            = $request->model;
-        $user->active         	= $request->active;
+        $device = $this->findModel($request->id);
+        $device->code             = $request->code;
+        $device->registration     = $request->registration;
+        $device->brand            = $request->brand;
+        $device->model            = $request->model;
+        $device->active         	= $request->active;
 
-        if ($user->save()) {
+        if ($device->save()) {
+            $result = new \stdClass();
+            $result->success = true;
+            $result->msg = 'Se modifico correctamente el dispositivo.';
+            echo json_encode($result);
+        } else {
+            $result = new \stdClass();
+            $result->success = false;
+            $result->msg = 'Ocurrio un error.';
+            echo json_encode($result);
+        }
+    }
+
+    public function actionActivate()
+    {
+        $postdata = file_get_contents("php://input");
+        $request = json_decode($postdata);
+
+        $device = $this->findModel($request->id);
+        $device->active           = $request->active;
+
+        if ($device->save()) {
             $result = new \stdClass();
             $result->success = true;
             $result->msg = 'Se modifico correctamente el dispositivo.';
