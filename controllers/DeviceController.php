@@ -57,12 +57,13 @@ class DeviceController extends \yii\web\Controller
     {
         $itemsStr  = $_POST['body'];
         $id_device = $_POST['deviceid'];
-        $items     =  json_decode($itemsStr,true);
+        $items     = json_decode($itemsStr,true);
+        $cant      = count($items);
 
         if(($device = DatDevice::findOne($id_device)) !== null){
-            $device->lat          = $items[9]['lat'];
-            $device->lon          = $items[9]['lon'];
-            $device->time         = $items[9]['time'];
+            $device->lat          = $items[$cant-1]['lat'];
+            $device->lon          = $items[$cant-1]['lon'];
+            $device->time         = $items[$cant-1]['time'];
 
             if ($device->save()) {
                 $result = new \stdClass();
