@@ -13,7 +13,16 @@ class DeviceController extends \yii\web\Controller
     {
         return $this->render('index');
     }
-
+	
+	public function behaviors()
+	{
+		return [
+			'corsFilter' => [
+				'class' => \yii\filters\Cors::className(),
+			],
+		];
+	}
+	
     public function actionCargar()
     {    
         $postdata = file_get_contents("php://input");
@@ -35,12 +44,16 @@ class DeviceController extends \yii\web\Controller
 
         $user->id_user    		= $request->userId;
         $user->code        		= $request->code;
-        $user->registration		= $request->registration;
+
+		if(isset($request->registration)){
+	        $user->registration	  = $request->registration;
+		}
+		
         $user->brand    		= $request->brand;
         $user->model    		= $request->model;
         $user->active         	= 'true';
 
-        if ($user->save()) {
+        if ($user->save(false)) {
             $result = new \stdClass();
             $result->success = true;
             $result->msg = 'Se creo creo correctamente el dispositivo.';
@@ -57,23 +70,30 @@ class DeviceController extends \yii\web\Controller
     {
         $itemsStr  = $_POST['body'];
         $id_device = $_POST['deviceid'];
+		
+		/*$nombre_archivo = "logs.txt"; 
+		if($archivo = fopen($nombre_archivo, "a"))
+		{
+			fwrite($archivo," Device :".$_POST['deviceid']." data:" .$itemsStr."\n");			
+		}*/
+				
         $items     = json_decode($itemsStr,true);
         $cant      = count($items);
-
-        if(($device = DatDevice::findOne($id_device)) !== null){
+		
+		$devices = DatDevice::find()->where(['code' => $id_device])->all();
+		$device = $devices[0];
+        if($device){
+			
             $device->lat          = $items[$cant-1]['lat'];
             $device->lon          = $items[$cant-1]['lon'];
             $device->time         = $items[$cant-1]['time'];
-
-            if ($device->save()) {
+            if ($device->save(false)) {
                 $result = new \stdClass();
                 $result->success = true;
-                $result->msg = 'Las coordenadas fueron guardadas.';
                 echo json_encode($result);
             }else {
                 $result = new \stdClass();
                 $result->success = false;
-                $result->msg = 'Error!!. Las coordenadas no fueron guardadas.';
                 echo json_encode($result);
             }  
         }else {
@@ -81,7 +101,10 @@ class DeviceController extends \yii\web\Controller
             $result->success = false;
             $result->msg = 'No se encontró el dispositivo.';
             echo json_encode($result);
-        }      
+        }
+		
+		
+		//fclose($archivo);
     }
 
 	public function actionUpdate()
@@ -89,14 +112,13 @@ class DeviceController extends \yii\web\Controller
         $postdata = file_get_contents("php://input");
         $request = json_decode($postdata);
 
-        $device = $this->findModel($request->id);
+        $device 				  = $this->findModel($request->id);
         $device->code             = $request->code;
         $device->registration     = $request->registration;
         $device->brand            = $request->brand;
         $device->model            = $request->model;
-        $device->active         	= $request->active;
-
-        if ($device->save()) {
+       
+        if ($device->save(false)) {
             $result = new \stdClass();
             $result->success = true;
             $result->msg = 'Se modifico correctamente el dispositivo.';
@@ -115,9 +137,9 @@ class DeviceController extends \yii\web\Controller
         $request = json_decode($postdata);
 
         $device = $this->findModel($request->id);
-        $device->active           = $request->active;
+        $device->active = $request->active;
 
-        if ($device->save()) {
+        if ($device->save(false)) {
             $result = new \stdClass();
             $result->success = true;
             $result->msg = 'Se modifico correctamente el dispositivo.';

@@ -11,6 +11,12 @@ $config = [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'hqudlbguu1119934',
         ],
+		'response' => [
+            'class' => 'yii\web\Response',
+            'on beforeSend' => function ($event) {
+                header("Access-Control-Allow-Origin: *");
+            }
+        ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],

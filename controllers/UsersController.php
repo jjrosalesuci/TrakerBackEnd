@@ -15,6 +15,15 @@ class UsersController extends \yii\web\Controller
     {
         return $this->render('index');
     }
+	
+	public function behaviors()
+	{
+		return [
+			'corsFilter' => [
+				'class' => \yii\filters\Cors::className(),
+			],
+		];
+	}
 
     public function actionCreate()
     {
@@ -50,16 +59,15 @@ class UsersController extends \yii\web\Controller
         $request = json_decode($postdata);
         $user = new DatUser();
 
-        $username = explode('@',$request->email);
-
-        $user->username    = $username[0];
+        $user->username    = $request->user;
         $user->email       = $request->email;
         $user->role        = 'usuario';
+		$user->active      = false;
 
         $user->setPassword($request->password);
         $user->generateAuthKey();
 
-        if ($user->save()) {
+        if ($user->save(false)) {
             $result = new \stdClass();
             $result->success = true;
             $result->msg = 'Se creo correctamente el usuario.';
