@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\models\DatUser;
 use Yii;
+use yii\helpers\Url;
 
 
 class UsersController extends \yii\web\Controller
@@ -62,12 +63,13 @@ class UsersController extends \yii\web\Controller
         $user->username    = $request->user;
         $user->email       = $request->email;
         $user->role        = 'usuario';
-		$user->active      = false;
+        $user->active      = false;
 
         $user->setPassword($request->password);
         $user->generateAuthKey();
 
         if ($user->save(false)) {
+            $this->Notificar($user->username,$user->id,$user->email);
             $result = new \stdClass();
             $result->success = true;
             $result->msg = 'Se creo correctamente el usuario.';
@@ -78,6 +80,58 @@ class UsersController extends \yii\web\Controller
             $result->msg = 'Ocurrio un error.';
             echo json_encode($result);
         }      
+    }
+
+    private function Notificar($username, $user_id,$email){
+
+        $cadena   = 'Estimado usuario '.$username.', bienvenido a nuestro sistema de monitoreo AsTraker, para acceder a nuestro sistema debe activar su cuenta accediendo al siguiente link :
+
+'.Url::base().'/index.php?r=users/confirmar&id='.$user_id.'
+
+Saludos cordiales
+AsTraker
+http://aseresoft.com/TrakerWebApp
+http://aseresoft.com/';
+        try{
+            $message = Yii::$app->mailer->compose();
+            $message->setFrom(array(Yii::$app->params["adminEmail"] =>  Yii::$app->params["adminNameSistem"]))
+                    ->setTo($email)
+                    ->setSubject('Confirmación de cuenta de usuario')
+                    ->setTextBody($cadena)                            
+                    ->send();
+        }
+            catch (Swift_TransportException $e) {
+                Yii::$app->getSession()->setFlash('danger', $e->getMessage());
+                return $this->render('smtpedit', array('model' => $has_smtp));
+                return true;
+        }
+    }
+
+    public function actionConfirmar()
+    {
+        $request = Yii::$app->request;
+        $model   = $this->findModel($request->get('id'));
+
+        if(!$model->active){
+            $model->active = true;
+            if ($model->save()) {
+                /*$result = new \stdClass();
+                $result->success = true;
+                $result->msg = 'Se confirmó correctamente la cuenta.';
+                echo json_encode($result);*/
+                echo 'Se confirmó correctamente la cuenta, ya puede cerrar esta ventana.';
+            } else {
+                $result = new \stdClass();
+                $result->success = false;
+                $result->msg = 'Ocurrio un error.';
+                echo json_encode($result);
+            }      
+        }else{
+            echo "Su cuenta ya ha sido confirmada!";
+            sleep(3);
+            header('Location: http://aseresoft.com/TrakerWebApp/');
+            exit;
+        }
     }
 
     public function actionCargar_usuarios()

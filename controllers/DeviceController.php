@@ -35,6 +35,18 @@ class DeviceController extends \yii\web\Controller
         echo json_encode(array('count' => $count, 'data' => $data));
     }
 
+    public function actionGetdevices()
+    {    
+        $devices   = $_POST['devices'];
+        $array_d   = json_decode($devices,true);
+        $data = array();
+        foreach ($array_d as $key => $value) {
+            $query = DatDevice::find()->where(['id' => $value['id']])->asArray()->all();
+            $data[] = $query;
+        }
+        echo json_encode(array('data' => $data));
+    }
+
     public function actionCreate()
     {
         $user = new DatDevice();
@@ -83,7 +95,6 @@ class DeviceController extends \yii\web\Controller
 		$devices = DatDevice::find()->where(['code' => $id_device])->all();
 		$device = $devices[0];
         if($device){
-			
             $device->lat          = $items[$cant-1]['lat'];
             $device->lon          = $items[$cant-1]['lon'];
             $device->time         = $items[$cant-1]['time'];

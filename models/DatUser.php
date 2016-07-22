@@ -21,15 +21,16 @@ use yii\web\IdentityInterface;
  * @property string $email
  * @property string $auth_key
  * @property string $role
- * @property string $status
  * @property string $created_at
  * @property string $updated_at
  * @property integer $active
  *
  * @property DatDevice[] $datDevices
  */
-class DatUser extends \yii\db\ActiveRecord
+class DatUser extends \yii\db\ActiveRecord implements IdentityInterface
 {
+    const STATUS_DELETED = false;
+    const STATUS_ACTIVE = true;
     /**
      * @inheritdoc
      */
@@ -53,7 +54,7 @@ class DatUser extends \yii\db\ActiveRecord
         return [
             [['username', 'password_hash', 'auth_key'], 'required'],
             [['active'], 'integer'],
-            [['username', 'names', 'lastname', 'sex', 'password_hash', 'password_reset_token', 'email', 'auth_key', 'role', 'status', 'created_at', 'updated_at'], 'string', 'max' => 256],
+            [['username', 'names', 'lastname', 'sex', 'password_hash', 'password_reset_token', 'email', 'auth_key', 'role', 'created_at', 'updated_at'], 'string', 'max' => 256],
             [['username'], 'unique'],
         ];
     }
@@ -74,7 +75,6 @@ class DatUser extends \yii\db\ActiveRecord
             'email' => 'Email',
             'auth_key' => 'Auth Key',
             'role' => 'Role',
-            'status' => 'Status',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
             'active' => 'Active',
@@ -91,7 +91,7 @@ class DatUser extends \yii\db\ActiveRecord
 
     public static function findIdentity($id)
     {
-        return static::findOne(['id' => $id, 'status' => self::STATUS_ACTIVE]);
+        return static::findOne(['id' => $id, 'active' => self::STATUS_ACTIVE]);
     }
 
     /**
@@ -110,7 +110,7 @@ class DatUser extends \yii\db\ActiveRecord
      */
     public static function findByUsername($username)
     {
-        return static::findOne(['username' => $username, 'status' => self::STATUS_ACTIVE]);
+        return static::findOne(['username' => $username, 'active' => self::STATUS_ACTIVE]);
     }
 
     /**
@@ -127,7 +127,7 @@ class DatUser extends \yii\db\ActiveRecord
 
         return static::findOne([
             'password_reset_token' => $token,
-            'status' => self::STATUS_ACTIVE,
+            'active' => self::STATUS_ACTIVE,
         ]);
     }
 

@@ -89,7 +89,7 @@ class SiteController extends Controller
         $model = new LoginForm();
         $model->username = $username;
         $model->password = md5($password);
-        
+
         if ($model->login()) {
             $result = new \stdClass();
             $result->success = true;
