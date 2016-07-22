@@ -36,14 +36,14 @@ class DeviceController extends \yii\web\Controller
     }
 
     public function actionGetdevices()
-    {    
+    {   
         $devices   = $_POST['devices'];
         $array_d   = json_decode($devices,true);
-        $data = array();
-        foreach ($array_d as $key => $value) {
-            $query = DatDevice::find()->where(['id' => $value['id']])->asArray()->all();
-            $data[] = $query;
-        }
+
+        $primaryConnection = \Yii::$app->db;
+        $command = $primaryConnection->createCommand("SELECT * FROM `dat_device` WHERE id IN(".$array_d.")");
+        $data = $command->queryAll(); 
+
         echo json_encode(array('data' => $data));
     }
 
